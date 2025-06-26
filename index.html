@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>塞罕坝植物分类系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8BC34A',
+                        secondary: '#A5D6A7',
+                        accent: '#689F38',
+                        light: '#E8F5E9',
+                        dark: '#33691E'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-height {
+                transition: max-height 0.3s ease;
+            }
+            .bg-blur {
+                backdrop-filter: blur(8px);
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-light font-sans text-gray-800 min-h-screen flex flex-col">
+    <!-- 密码验证模态框 -->
+    <div id="password-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all">
+            <h2 class="text-2xl font-bold mb-6 text-center text-primary">欢迎访问塞罕坝植物分类系统</h2>
+            <p class="text-gray-600 mb-6 text-center">请输入访问密码</p>
+            <div class="mb-6">
+                <input type="password" id="password-input" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" placeholder="请输入密码">
+            </div>
+            <button id="password-submit" class="w-full bg-primary hover:bg-accent text-white font-medium py-3 px-6 rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg">
+                确认
+            </button>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <header id="navbar" class="fixed top-0 left-0 right-0 bg-primary/90 text-white shadow-md z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-leaf text-xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold">塞罕坝植物分类系统</h1>
+            </div>
+            <nav id="breadcrumb" class="hidden md:flex items-center space-x-2 text-sm">
+                <a href="#" class="hover:underline text-white/90" data-level="0">首页</a>
+                <i class="fa fa-angle-right text-white/70"></i>
+                <a href="#" class="hover:underline text-white/90 hidden" data-level="1"></a>
+                <i class="fa fa-angle-right text-white/70 hidden"></i>
+                <a href="#" class="hover:underline text-white/90 hidden" data-level="2"></a>
+                <i class="fa fa-angle-right text-white/70 hidden"></i>
+                <a href="#" class="hover:underline text-white/90 hidden" data-level="3"></a>
+            </nav>
+            <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white/95 shadow-lg absolute w-full">
+            <div class="container mx-auto px-4 py-2">
+                <nav class="flex flex-col space-y-2">
+                    <a href="#" class="py-2 px-4 hover:bg-primary/10 rounded-lg transition-colors text-gray-800" data-level="0">首页</a>
+                    <a href="#" class="py-2 px-4 hover:bg-primary/10 rounded-lg transition-colors text-gray-800 hidden" data-level="1"></a>
+                    <a href="#" class="py-2 px-4 hover:bg-primary/10 rounded-lg transition-colors text-gray-800 hidden" data-level="2"></a>
+                    <a href="#" class="py-2 px-4 hover:bg-primary/10 rounded-lg transition-colors text-gray-800 hidden" data-level="3"></a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow pt-20 pb-12 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <!-- 网站介绍卡片 -->
+        <div id="intro-card" class="mb-8 bg-white rounded-xl shadow-lg overflow-hidden transform transition-all hover:shadow-xl">
+            <div class="bg-primary/20 p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-primary mb-4">关于本网站</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    我们是北京大学城市与环境学院23级生态学系的塞罕坝野外生态学实习小组。本网站仅供学习植物分类使用，
+                    记录了我们在塞罕坝生态站实习期间拍摄的植物照片及相关分类信息。
+                </p>
+            </div>
+            <div class="p-6 md:p-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">网站使用说明</h3>
+                <ul class="space-y-3 text-gray-700">
+                    <li class="flex items-start">
+                        <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                        <span>点击首页的科名，浏览该科下的所有属</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                        <span>点击属名，浏览该属下的所有种</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                        <span>点击种名，查看该种植物的详细信息和照片</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                        <span>你可以通过页面顶部的导航栏快速返回上级分类</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                        <span>授权用户可以上传照片、添加新的分类信息或编辑已有内容</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div id="content-area" class="bg-white rounded-xl shadow-lg p-6 md:p-8 transition-all duration-300">
+            <!-- 分类列表容器 -->
+            <div id="taxonomy-list" class="space-y-4">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">植物分类列表</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- 科列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 属列表容器 -->
+            <div id="genus-list" class="space-y-4 hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <span id="current-family-name"></span>
+                    <span class="text-primary">下属的属</span>
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- 属列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 种列表容器 -->
+            <div id="species-list" class="space-y-4 hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <span id="current-genus-name"></span>
+                    <span class="text-primary">下属的种</span>
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- 种列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 物种详情容器 -->
+            <div id="species-detail" class="space-y-6 hidden">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="md:w-1/2">
+                        <div id="species-images" class="space-y-4">
+                            <div class="aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-md">
+                                <img id="main-image" src="https://picsum.photos/800/450?random=1" alt="植物图片" class="w-full h-full object-cover transition-all duration-300 hover:scale-105">
+                            </div>
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="aspect-square bg-gray-100 rounded overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                                    <img src="https://picsum.photos/200/200?random=1" alt="植物图片缩略图" class="w-full h-full object-cover">
+                                </div>
+                                <div class="aspect-square bg-gray-100 rounded overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                                    <img src="https://picsum.photos/200/200?random=2" alt="植物图片缩略图" class="w-full h-full object-cover">
+                                </div>
+                                <div class="aspect-square bg-gray-100 rounded overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                                    <img src="https://picsum.photos/200/200?random=3" alt="植物图片缩略图" class="w-full h-full object-cover">
+                                </div>
+                                <div class="aspect-square bg-gray-100 rounded overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                                    <img src="https://picsum.photos/200/200?random=4" alt="植物图片缩略图" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2" id="detail-species-name"></h2>
+                        <p class="text-xl italic text-gray-600 mb-4" id="detail-species-latin"></p>
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                            <div class="flex items-center mb-2">
+                                <span class="font-semibold w-24 text-gray-700">科:</span>
+                                <span id="detail-family" class="text-gray-800"></span>
+                            </div>
+                            <div class="flex items-center mb-2">
+                                <span class="font-semibold w-24 text-gray-700">属:</span>
+                                <span id="detail-genus" class="text-gray-800"></span>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">物种介绍</h3>
+                            <div id="species-description" class="text-gray-700 leading-relaxed prose max-w-none">
+                                <p>暂无物种介绍，等待补充...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 浮动操作按钮 -->
+    <div id="floating-buttons" class="fixed bottom-6 right-6 z-30 flex flex-col items-end space-y-3">
+        <button id="upload-photo-btn" class="bg-primary hover:bg-accent text-white rounded-full p-4 shadow-lg transform transition-all hover:scale-110 active:scale-95 flex items-center space-x-2">
+            <i class="fa fa-camera"></i>
+            <span class="hidden md:inline">上传照片</span>
+        </button>
+        <button id="add-taxonomy-btn" class="bg-primary hover:bg-accent text-white rounded-full p-4 shadow-lg transform transition-all hover:scale-110 active:scale-95 flex items-center space-x-2">
+            <i class="fa fa-plus"></i>
+            <span class="hidden md:inline">添加分类</span>
+        </button>
+    </div>
+
+    <!-- 上传照片模态框 -->
+    <div id="upload-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">上传植物照片</h3>
+                <button id="close-upload-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="upload-form">
+                <div class="mb-4">
+                    <label for="photo-file" class="block text-gray-700 mb-2">选择照片</label>
+                    <input type="file" id="photo-file" class="w-full p-2 border border-gray-300 rounded-lg" accept="image/*">
+                </div>
+                <div class="mb-4">
+                    <label for="photo-family" class="block text-gray-700 mb-2">选择科</label>
+                    <select id="photo-family" class="w-full p-2 border border-gray-300 rounded-lg">
+                        <!-- 科选项将通过JavaScript动态生成 -->
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="photo-genus" class="block text-gray-700 mb-2">选择属</label>
+                    <select id="photo-genus" class="w-full p-2 border border-gray-300 rounded-lg">
+                        <!-- 属选项将通过JavaScript动态生成 -->
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="photo-species" class="block text-gray-700 mb-2">选择种</label>
+                    <select id="photo-species" class="w-full p-2 border border-gray-300 rounded-lg">
+                        <!-- 种选项将通过JavaScript动态生成 -->
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-upload" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                        取消
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-primary hover:bg-accent text-white rounded-lg transition-colors">
+                        上传
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 添加分类模态框 -->
+    <div id="add-taxonomy-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">添加新分类</h3>
+                <button id="close-add-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="add-taxonomy-form">
+                <div class="mb-4">
+                    <label for="taxonomy-type" class="block text-gray-700 mb-2">分类级别</label>
+                    <select id="taxonomy-type" class="w-full p-2 border border-gray-300 rounded-lg">
+                        <option value="family">科</option>
+                        <option value="genus">属</option>
+                        <option value="species">种</option>
+                    </select>
+                </div>
+                <div id="parent-family-group" class="mb-4 hidden">
+                    <label for="parent-family" class="block text-gray-700 mb-2">所属科</label>
+                    <select id="parent-family" class="w-full p-2 border border-gray-300 rounded-lg">
+                        <!-- 科选项将通过JavaScript动态生成 -->
+                    </select>
+                </div>
+                <div id="parent-genus-group" class="mb-4 hidden">
+                    <label for="parent-genus" class="block text-gray-700 mb-2">所属属</label>
+                    <select id="parent-genus" class="w-full p-2 border border-gray-300 rounded-lg">
+                        <!-- 属选项将通过JavaScript动态生成 -->
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="taxonomy-name" class="block text-gray-700 mb-2">中文名</label>
+                    <input type="text" id="taxonomy-name" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="输入分类单元的中文名">
+                </div>
+                <div class="mb-4">
+                    <label for="taxonomy-latin" class="block text-gray-700 mb-2">拉丁名</label>
+                    <input type="text" id="taxonomy-latin" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="输入分类单元的拉丁名">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-add" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                        取消
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-primary hover:bg-accent text-white rounded-lg transition-colors">
+                        添加
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 编辑物种信息模态框 -->
+    <div id="edit-species-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">编辑物种信息</h3>
+                <button id="close-edit-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="edit-species-form">
+                <div class="mb-4">
+                    <label for="edit-species-name" class="block text-gray-700 mb-2">中文名</label>
+                    <input type="text" id="edit-species-name" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="输入物种中文名">
+                </div>
+                <div class="mb-4">
+                    <label for="edit-species-latin" class="block text-gray-700 mb-2">拉丁名</label>
+                    <input type="text" id="edit-species-latin" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="输入物种拉丁名">
+                </div>
+                <div class="mb-4">
+                    <label for="edit-species-description" class="block text-gray-700 mb-2">物种描述</label>
+                    <textarea id="edit-species-description" rows="5" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="输入物种描述信息"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-edit" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                        取消
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-primary hover:bg-accent text-white rounded-lg transition-colors">
+                        保存
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-primary text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center justify-center md:justify-start space-x-2">
+                        <i class="fa fa-leaf text-xl"></i>
+                        <span class="text-lg font-semibold">塞罕坝植物分类系统</span>
+                    </div>
+                    <p class="text-sm text-white/80 mt-1">北京大学城市与环境学院23级生态学系</p>
+                </div>
+                <div class="text-sm text-white/80">
+                    <p>© 2025 塞罕坝野外生态学实习小组 版权所有</p>
+                    <p class="mt-1">本网站仅供学习植物分类使用</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 植物数据结构
+        const plantData = {
+            families: [
+                {
+                    id: 1,
+                    name: "木贼科",
+                    latin: "Equisetaceae",
+                    genera: [
+                        {
+                            id: 1,
+                            name: "木贼属",
+                            latin: "Equisetum",
+                            species: [
+                                {
+                                    id: 1,
+                                    name: "问荆",
+                                    latin: "Equisetum arvense",
+                                    description: "问荆（学名：Equisetum arvense），中小型植物。根茎斜升，直立和横走，黑棕色，节和根密生黄棕色长毛或光滑无毛。地上枝当年枯萎。枝二型。能育枝春季先萌发，高5-35厘米，中部直径3-5毫米，节间长2-6厘米，黄棕色，无轮茎分枝，脊不明显，要密纵沟；鞘筒栗棕色或淡黄色，长约0.8厘米，鞘齿9-12枚，栗棕色，长4-7毫米，狭三角形，鞘背上部有一浅纵沟，孢子散后能育枝枯萎。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=1",
+                                        "https://picsum.photos/800/600?random=2",
+                                        "https://picsum.photos/800/600?random=3"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "松科",
+                    latin: "Pinaceae",
+                    genera: [
+                        {
+                            id: 2,
+                            name: "松属",
+                            latin: "Pinus",
+                            species: [
+                                {
+                                    id: 2,
+                                    name: "樟子松",
+                                    latin: "Pinus sylvestris var. mongolica",
+                                    description: "樟子松（学名：Pinus sylvestris var. mongolica）是松科，松属欧洲赤松的变种，乔木，高可达30米，胸径可达80厘米；树皮下部黑褐色，上部黄褐色，裂成不规则的块状脱落；枝条开展，树冠尖塔形；一年生枝淡黄褐色，无毛，二、三年生枝灰褐色；冬芽褐色或淡黄褐色，长卵圆形，有树脂。针叶2针一束，硬直，常扭曲，先端尖，边缘有细锯齿，叶面有气孔线；叶鞘宿存。雄球花圆柱状卵圆形，长5-10毫米，聚生新枝下部，淡褐黄色；雌球花有短梗，淡紫褐色，当年生小球果长约1厘米，下垂。球果卵圆形或长卵圆形，成熟前绿色，熟时淡褐灰色，有短梗；种鳞楔状倒卵形，鳞盾菱形，种子黑褐色，长卵圆形或倒卵圆形，翅长约1.6厘米；子叶6-7枚，长1.3-2.4厘米；初生叶条形，长1.8-2.4厘米，上面有凹槽，边缘有较密的细锯齿，叶面上亦有疏生齿毛。花期5-6月，球果第二年9-10月成熟。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=4",
+                                        "https://picsum.photos/800/600?random=5",
+                                        "https://picsum.photos/800/600?random=6"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 3,
+                            name: "落叶松属",
+                            latin: "Larix",
+                            species: [
+                                {
+                                    id: 3,
+                                    name: "华北落叶松",
+                                    latin: "Larix principis-rupprechtii",
+                                    description: "华北落叶松（学名：Larix principis-rupprechtii）是松科，落叶松属乔木，高可达30米，胸径1米；树皮暗灰褐色，裂成不规则块片脱落；小枝平展，具不规则细齿；叶片在长枝上螺旋状散生，在短枝上呈簇生状，倒披针状条形，先端尖或钝尖，上面中脉不隆起，下面沿中脉两侧有气孔线。雄球花近圆形，黄色，球果卵圆形或长卵圆形，熟时淡褐色或淡灰褐色，有短梗；种鳞楔状倒卵形，鳞背光滑无毛，苞鳞短于种鳞，暗紫色，边缘有不规则细齿，种子斜倒卵圆形，灰白色，种翅上部三角状，4-5月开花，10月球果成熟。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=7",
+                                        "https://picsum.photos/800/600?random=8",
+                                        "https://picsum.photos/800/600?random=9"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 4,
+                            name: "云杉属",
+                            latin: "Picea",
+                            species: [
+                                {
+                                    id: 4,
+                                    name: "（某种云杉）",
+                                    latin: "Picea sp.",
+                                    description: "云杉属（学名：Picea）是松科下的一个属，为常绿乔木植物。该属共有约35种，分布于北温带。中国有19种，另引种栽培2种。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=10",
+                                        "https://picsum.photos/800/600?random=11",
+                                        "https://picsum.photos/800/600?random=12"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "毛茛科",
+                    latin: "Ranunculaceae",
+                    genera: [
+                        {
+                            id: 5,
+                            name: "毛茛属",
+                            latin: "Ranunculus",
+                            species: [
+                                {
+                                    id: 5,
+                                    name: "毛茛",
+                                    latin: "Ranunculus japonicus",
+                                    description: "毛茛（学名：Ranunculus japonicus）是毛茛科，毛茛属多年生草本植物。须根多数簇生。茎直立，高可达70厘米，中空，有槽，具分枝，生开展或贴伏的柔毛。基生叶多数；叶片圆心形或五角形，基部心形或截形，中裂片倒卵状楔形或宽卵圆形或菱形，两面贴生柔毛，叶柄生开展柔毛。下部叶与基生叶相似，渐向上叶柄变短，叶片较小。聚伞花序有多数花，疏散；花直径1.5-2.2厘米；萼片椭圆形，生白柔毛；花瓣5，倒卵状圆形，花托短小，无毛。聚合果近球形，瘦果扁平，喙短直或外弯。4月至9月开花结果。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=13",
+                                        "https://picsum.photos/800/600?random=14",
+                                        "https://picsum.photos/800/600?random=15"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 6,
+                            name: "水毛茛属",
+                            latin: "Batrachium",
+                            species: [
+                                {
+                                    id: 6,
+                                    name: "水毛茛",
+                                    latin: "Batrachium bungei",
+                                    description: "水毛茛（学名：Batrachium bungei）是毛茛科，水毛茛属多年生沉水草本植物。茎长可达30厘米，无毛或在节上有疏毛。叶片轮廓近半圆形或扇状半圆形，直径2.5-4厘米，3-5回2-3裂，小裂片近丝形，在水外通常收拢或近叉开，无毛；叶柄长约1厘米，基部有宽或狭的鞘，鞘长3-4毫米，通常多少有短伏毛，偶尔叶柄只有鞘状部分。花直径1-1.5厘米；花梗长2-5厘米，无毛；萼片反折，卵状椭圆形，长2.5-4毫米，边缘膜质，无毛；花瓣白色，基部黄色，倒卵形，长5-9毫米，基部有短爪；雄蕊10余枚，花药长约1毫米；花托有毛。聚合果卵球形，直径约3.5毫米；瘦果20-40，斜狭倒卵形，长约1.2毫米，有横皱纹和疏毛。花期5-8月。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=16",
+                                        "https://picsum.photos/800/600?random=17",
+                                        "https://picsum.photos/800/600?random=18"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 7,
+                            name: "唐松草属",
+                            latin: "Thalictrum",
+                            species: [
+                                {
+                                    id: 7,
+                                    name: "瓣蕊唐松草",
+                                    latin: "Thalictrum petaloideum",
+                                    description: "瓣蕊唐松草（学名：Thalictrum petaloideum）是毛茛科，唐松草属多年生草本植物，植株全部无毛。茎高可达60厘米，上部分枝。基生叶数个，为三至四回三出或羽状复叶；小叶草质，形状变异很大，顶生小叶倒卵形、宽倒卵形、菱形或近圆形，三浅裂至三深裂，裂片全缘，叶脉平，背面网脉稍明显；叶柄长达10厘米，基部有鞘。复单歧聚伞花序伞房状，有多数花；萼片4，白色，早落，卵形；雄蕊多数，花药狭长圆形，花丝上部倒披针形，比花药宽；心皮4-13，无柄，花柱短，柱头侧生。瘦果卵形，有8条纵肋，宿存花柱长约1毫米。6-7月开花，7-8月结果。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=19",
+                                        "https://picsum.photos/800/600?random=20",
+                                        "https://picsum.photos/800/600?random=21"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 8,
+                            name: "乌头属",
+                            latin: "Aconitum",
+                            species: [
+                                {
+                                    id: 8,
+                                    name: "铁棒锤",
+                                    latin: "Aconitum pendulum",
+                                    description: "铁棒锤（学名：Aconitum pendulum）是毛茛科，乌头属多年生草本植物，块根倒圆锥形，长2-4厘米，粗1-1.6厘米。茎高可达100厘米，中部以上被反曲的短柔毛，等距离生叶，分枝。茎下部叶在开花时枯萎。叶片宽卵形，小裂片线形，叶轴有狭翅，两面无毛或疏被短毛。顶生总状花序狭长；轴及花梗密被反曲而紧贴的短柔毛；下部苞片叶状，上部苞片线形；小苞片生花梗中部，线形；萼片黄色，上萼片船状镰刀形或镰刀形，侧萼片长1.6-2厘米，下萼片斜长圆形；花瓣无毛，瓣片长约8毫米，唇长1.5-2毫米，距长约1毫米，向后弯曲；雄蕊无毛，花丝全缘；心皮5，子房密被短柔毛。蓇葖长1.1-1.4厘米；种子倒卵状三稜形，长约3毫米，光滑，沿稜有狭翅。8-9月开花。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=22",
+                                        "https://picsum.photos/800/600?random=23",
+                                        "https://picsum.photos/800/600?random=24"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 9,
+                            name: "翠雀属",
+                            latin: "Delphinium",
+                            species: [
+                                {
+                                    id: 9,
+                                    name: "翠雀",
+                                    latin: "Delphinium grandiflorum",
+                                    description: "翠雀（学名：Delphinium grandiflorum）是毛茛科，翠雀属多年生草本植物，茎高可达65厘米，与叶柄均被反曲而贴伏的短柔毛，上部有时变无毛，等距地生叶，分枝。基生叶和茎下部叶有长柄；叶片圆五角形，三全裂，小裂片线形，表面疏被短伏毛，背面无毛或近无毛；叶柄基部具狭鞘。总状花序有花3-15朵；轴和花梗被反曲的短柔毛；小苞片生花梗中部或上部，线形或丝形；萼片紫蓝色，椭圆形或宽椭圆形，距钻形，直或末端稍向下弯曲；花瓣蓝色，无毛；退化雄蕊蓝色，瓣片近圆形或宽倒卵形，顶端全缘或微凹，腹面中央有黄色髯毛；雄蕊无毛；心皮3，子房密被贴伏的短柔毛。蓇葖直，种子倒卵状四面体形，沿稜有翅。5-10月开花。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=25",
+                                        "https://picsum.photos/800/600?random=26",
+                                        "https://picsum.photos/800/600?random=27"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 10,
+                            name: "白头翁属",
+                            latin: "Pulsatilla",
+                            species: [
+                                {
+                                    id: 10,
+                                    name: "细叶白头翁",
+                                    latin: "Pulsatilla turczaninovii",
+                                    description: "细叶白头翁（学名：Pulsatilla turczaninovii）是毛茛科，白头翁属多年生草本植物，高可达25厘米。基生叶多数，有长柄，叶片卵形，三全裂，中全裂片有柄，又三全裂，末回裂片狭线形，全缘或有1-2小裂片，侧全裂片无柄，表面近无毛，背面有长柔毛；叶柄有柔毛。花葶有柔毛；总苞钟形，管部长约1.2厘米，裂片线形，外面密被柔毛；花梗结果时长达15厘米；萼片蓝紫色，长圆状卵形，外面密被短柔毛；雄蕊长约为萼片之半。聚合果直径约10厘米；瘦果长约4毫米，有长柔毛，宿存花柱长约3厘米，有向上斜展的长柔毛。4月至5月开花。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=28",
+                                        "https://picsum.photos/800/600?random=29",
+                                        "https://picsum.photos/800/600?random=30"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 11,
+                            name: "银莲花属",
+                            latin: "Anemone",
+                            species: [
+                                {
+                                    id: 11,
+                                    name: "大花银莲花",
+                                    latin: "Anemone silvestris",
+                                    description: "大花银莲花（学名：Anemone silvestris）是毛茛科，银莲花属多年生草本植物，植株高可达40厘米。根状茎垂直或斜，基生叶有长柄，叶片圆肾形，三全裂，中全裂片有短柄，宽菱形，三深裂，深裂片浅裂，末回裂片卵形或狭卵形，侧全裂片较小，近无柄，表面近无毛，背面疏被长柔毛；叶柄疏被长柔毛。花葶只在上部有疏柔毛；苞片有柄，叶片似基生叶，稍小；花梗有短柔毛；萼片白色，倒卵形，长2-3厘米，宽1.3-2厘米，顶端圆形，外面有疏柔毛；雄蕊长约5毫米，花药狭椭圆形，花丝丝形；心皮约40，子房密被柔毛，花柱短，柱头侧生。瘦果狭卵形，长约5毫米，有柔毛，宿存花柱短。5月至6月开花。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=31",
+                                        "https://picsum.photos/800/600?random=32",
+                                        "https://picsum.photos/800/600?random=33"
+                                    ]
+                                },
+                                {
+                                    id: 12,
+                                    name: "长毛银莲花",
+                                    latin: "Anemone narcissiflora var. crinita",
+                                    description: "长毛银莲花（学名：Anemone narcissiflora var. crinita）是毛茛科，银莲花属多年生草本植物，植株高可达60厘米。根状茎垂直或斜，基生叶有长柄，叶片圆肾形，三全裂，中全裂片有短柄，宽菱形，三深裂，深裂片浅裂，末回裂片卵形或狭卵形，侧全裂片较小，近无柄，表面近无毛，背面疏被长柔毛；叶柄疏被长柔毛。花葶只在上部有疏柔毛；苞片有柄，叶片似基生叶，稍小；花梗有短柔毛；萼片白色，倒卵形，长2-3厘米，宽1.3-2厘米，顶端圆形，外面有疏柔毛；雄蕊长约5毫米，花药狭椭圆形，花丝丝形；心皮约40，子房密被柔毛，花柱短，柱头侧生。瘦果狭卵形，长约5毫米，有柔毛，宿存花柱短。5月至6月开花。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=34",
+                                        "https://picsum.photos/800/600?random=35",
+                                        "https://picsum.photos/800/600?random=36"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 12,
+                            name: "金莲花属",
+                            latin: "Trollius",
+                            species: [
+                                {
+                                    id: 13,
+                                    name: "金莲花",
+                                    latin: "Trollius chinensis",
+                                    description: "金莲花（学名：Trollius chinensis）是毛茛科，金莲花属多年生草本植物，植株全体无毛。须根长达7厘米。茎高可达70厘米，不分枝，基生叶1-4片，有长柄；叶片五角形，基部心形，三全裂，中央全裂片菱形，顶端急尖，三裂近中部，边缘有缺刻状尖牙齿，表面深绿色，背面淡绿色，茎生叶似基生叶，向上渐小。花单独顶生或2-3朵组成稀疏的聚伞花序，直径3.8-5.5厘米；萼片通常10-15片，金黄色，干时不变绿色，最外层的椭圆状卵形或倒卵形，顶端疏生三角形牙齿，间或生3个小裂片，其他的椭圆状倒卵形或倒卵形，顶端圆形，生不明显的小牙齿；花瓣与萼片近等长，狭线形，顶端渐狭，雄蕊长约1厘米，花药长约3毫米；心皮20-30。蓇葖长1-1.2厘米，具稍明显的脉网，喙长约1毫米；种子近倒卵形，长约1.5毫米，黑色，具4条不明显的纵棱。6-7月开花，8-9月结果。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=37",
+                                        "https://picsum.photos/800/600?random=38",
+                                        "https://picsum.photos/800/600?random=39"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 13,
+                            name: "铁线莲属",
+                            latin: "Clematis",
+                            species: [
+                                {
+                                    id: 14,
+                                    name: "棉团铁线莲",
+                                    latin: "Clematis hexapetala",
+                                    description: "棉团铁线莲（学名：Clematis hexapetala）是毛茛科，铁线莲属多年生直立草本，高可达100厘米。茎圆柱形，有纵沟，疏生柔毛，后变无毛。叶片近革质，绿色，干后常变黑色，单叶至复叶，一至二回羽状深裂，裂片线状披针形至长椭圆形，顶端锐尖或凸尖，基部楔形，全缘，两面或沿叶脉疏生长柔毛或近无毛，网脉突出。聚伞花序顶生或腋生，通常花3朵，有时单花；花直径3.5-5厘米；萼片6，白色，长圆形或狭倒卵形，外面密生棉毛，花蕾时像棉花球，内面无毛；雄蕊无毛。瘦果倒卵形，扁平，密生柔毛，宿存花柱长约2厘米，有灰白色长柔毛。6月至8月开花，7月至10月结果。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=40",
+                                        "https://picsum.photos/800/600?random=41",
+                                        "https://picsum.photos/800/600?random=42"
+                                    ]
+                                },
+                                {
+                                    id: 15,
+                                    name: "大花铁线莲",
+                                    latin: "Clematis patens",
+                                    description: "大花铁线莲（学名：Clematis patens）是毛茛科，铁线莲属多年生草质藤本，长约1-2米。茎棕色或紫红色，具六条纵纹，被稀疏柔毛，幼时更密。二回三出复叶，小叶片9枚，纸质，卵状披针形或狭卵形，顶端渐尖或钝尖，基部圆形或阔楔形，边缘全缘，极稀有分裂，两面均不被毛，脉纹不显；小叶柄清晰能见，短或长达1厘米；叶柄长4-6厘米，被疏柔毛。花单生于叶腋；花梗长约6-11厘米，近于无毛，在中下部生一对叶状苞片；苞片宽卵圆形或卵状三角形，无柄或具短柄，被黄色柔毛；花开展，直径约10厘米；萼片6枚，白色，倒卵圆形或匙形，长达6厘米，宽约2.5厘米，顶端较尖，基部渐狭，内面无毛，外面沿三条直的中脉形成一线状披针形的带，被绒毛，边缘无毛；雄蕊紫红色，长约1.5厘米，花药线形，比花丝长，花丝具短柔毛，药隔的外面被毛；心皮被短柔毛，花柱线形，上部无毛，柱头膨大成头状，微2裂。瘦果倒卵形，扁平，边缘增厚，宿存花柱伸长成喙状，细瘦，下部有开展的短柔毛，上部无毛，长约4厘米。花期5月，果期6月。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=43",
+                                        "https://picsum.photos/800/600?random=44",
+                                        "https://picsum.photos/800/600?random=45"
+                                    ]
+                                },
+                                {
+                                    id: 16,
+                                    name: "长瓣铁线莲",
+                                    latin: "Clematis macropetala",
+                                    description: "长瓣铁线莲（学名：Clematis macropetala）是毛茛科，铁线莲属多年生草质藤本，长约1-2米。茎棕色或紫红色，具六条纵纹，被稀疏柔毛，幼时更密。二回三出复叶，小叶片9枚，纸质，卵状披针形或狭卵形，顶端渐尖或钝尖，基部圆形或阔楔形，边缘全缘，极稀有分裂，两面均不被毛，脉纹不显；小叶柄清晰能见，短或长达1厘米；叶柄长4-6厘米，被疏柔毛。花单生于叶腋；花梗长约6-11厘米，近于无毛，在中下部生一对叶状苞片；苞片宽卵圆形或卵状三角形，无柄或具短柄，被黄色柔毛；花开展，直径约10厘米；萼片6枚，白色，倒卵圆形或匙形，长达6厘米，宽约2.5厘米，顶端较尖，基部渐狭，内面无毛，外面沿三条直的中脉形成一线状披针形的带，被绒毛，边缘无毛；雄蕊紫红色，长约1.5厘米，花药线形，比花丝长，花丝具短柔毛，药隔的外面被毛；心皮被短柔毛，花柱线形，上部无毛，柱头膨大成头状，微2裂。瘦果倒卵形，扁平，边缘增厚，宿存花柱伸长成喙状，细瘦，下部有开展的短柔毛，上部无毛，长约4厘米。花期5月，果期6月。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=46",
+                                        "https://picsum.photos/800/600?random=47",
+                                        "https://picsum.photos/800/600?random=48"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 4,
+                    name: "罂粟科",
+                    latin: "Papaveraceae",
+                    genera: [
+                        {
+                            id: 14,
+                            name: "罂粟属",
+                            latin: "Papaver",
+                            species: [
+                                {
+                                    id: 17,
+                                    name: "野罂粟",
+                                    latin: "Papaver nudicaule",
+                                    description: "野罂粟（学名：Papaver nudicaule）是罂粟科，罂粟属多年生草本植物，高可达60厘米。主根圆柱形，延长，上部粗，向下渐狭。茎极缩短。叶全部基生，叶片轮廓卵形至披针形，羽状浅裂、深裂或全裂，裂片2-4对，狭卵形至披针形，全缘或再次羽状浅裂或深裂，小裂片狭卵形或长圆形，先端急尖、钝或圆，两面稍具白粉，密被或疏被刚毛，极稀近无毛；叶柄长（1-）5-12厘米，基部扩大成鞘，被斜展的刚毛。花葶1至数枚，圆柱形，直立，密被或疏被斜展的刚毛。花单生于花葶先端；花蕾宽卵形至近球形，长1.5-2厘米，密被褐色刚毛，通常下垂；萼片2，舟状椭圆形，早落；花瓣4，宽楔形或倒卵形，长（1.5-）2-3厘米，边缘具浅波状圆齿，基部具短爪，黄色、橙黄色或红色；雄蕊多数，花丝丝状，长约8毫米，花药长圆形，长约2毫米，淡黄色；子房倒卵形至狭倒卵形，长0.5-1厘米，密被紧贴的刚毛，柱头4-8，辐射状，连合成扁平、边缘具疏离粗齿的盘状体。蒴果狭倒卵形、倒卵形或倒卵状长圆形，长1-1.7厘米，密被紧贴的刚毛，具4-8条淡色的宽肋；柱头盘平扁，具疏离粗齿，直径0.5-1厘米。种子多数，近肾形，小，褐色，表面具条纹和蜂窝小孔穴。花果期5-9月。",
+                                    images: [
+                                        "https://picsum.photos/800/600?random=49",
+                                        "https://picsum.photos/800/600?random=50",
+                                        "https://picsum.photos/800/600?random=51"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // 当前选中的分类信息
+        let currentFamily = null;
+        let currentGenus = null;
+        let currentSpecies = null;
+
+        // DOM元素
+        const passwordModal = document.getElementById('password-modal');
+        const passwordInput = document.getElementById('password-input');
+        const passwordSubmit = document.getElementById('password-submit');
+        const navbar = document.getElementById('navbar');
+        const breadcrumb = document.getElementById('breadcrumb');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const taxonomyList = document.getElementById('taxonomy-list');
+        const genusList = document.getElementById('genus-list');
+        const speciesList = document.getElementById('species-list');
+        const speciesDetail = document.getElementById('species-detail');
+        const currentFamilyName = document.getElementById('current-family-name');
+        const currentGenusName = document.getElementById('current-genus-name');
+        const detailSpeciesName = document.getElementById('detail-species-name');
+        const detailSpeciesLatin = document.getElementById('detail-species-latin');
+        const detailFamily = document.getElementById('detail-family');
+        const detailGenus = document.getElementById('detail-genus');
+        const speciesDescription = document.getElementById('species-description');
+        const uploadPhotoBtn = document.getElementById('upload-photo-btn');
+        const addTaxonomyBtn = document.getElementById('add-taxonomy-btn');
+        const uploadModal = document.getElementById('upload-modal');
+        const closeUploadModal = document.getElementById('close-upload-modal');
+        const cancelUpload = document.getElementById('cancel-upload');
+        const uploadForm = document.getElementById('upload-form');
+        const addTaxonomyModal = document.getElementById('add-taxonomy-modal');
+        const closeAddModal = document.getElementById('close-add-modal');
+        const cancelAdd = document.getElementById('cancel-add');
+        const addTaxonomyForm = document.getElementById('add-taxonomy-form');
+        const taxonomyType = document.getElementById('taxonomy-type');
+        const parentFamilyGroup = document.getElementById('parent-family-group');
+        const parentFamily = document.getElementById('parent-family');
+        const parentGenusGroup = document.getElementById('parent-genus-group');
+        const parentGenus = document.getElementById('parent-genus');
+        const taxonomyName = document.getElementById('taxonomy-name');
+        const taxonomyLatin = document.getElementById('taxonomy-latin');
+        const editSpeciesModal = document.getElementById('edit-species-modal');
+        const closeEditModal = document.getElementById('close-edit-modal');
+        const cancelEdit = document.getElementById('cancel-edit');
+        const editSpeciesForm = document.getElementById('edit-species-form');
+        const editSpeciesName = document.getElementById('edit-species-name');
+        const editSpeciesLatin = document.getElementById('edit-species-latin');
+        const editSpeciesDescription = document.getElementById('edit-species-description');
+        const mainImage = document.getElementById('main-image');
+
+        // 密码验证
+        passwordSubmit.addEventListener('click', () => {
+            if (passwordInput.value === 'eco') {
+                passwordModal.classList.add('hidden');
+                loadFamilies();
+            } else {
+                passwordInput.classList.add('border-red-500');
+                passwordInput.classList.add('animate-shake');
+                setTimeout(() => {
+                    passwordInput.classList.remove('animate-shake');
+                }, 500);
+            }
+        });
+
+        passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                passwordSubmit.click();
+            }
+        });
+
+        // 移动端菜单切换
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 加载科列表
+        function loadFamilies() {
+            const familiesContainer = document.querySelector('#taxonomy-list .grid');
+            familiesContainer.innerHTML = '';
+
+            plantData.families.forEach(family => {
+                const familyCard = document.createElement('div');
+                familyCard.className = 'bg-white rounded-xl shadow-md overflow-hidden transform transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer';
+                familyCard.innerHTML = `
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-800">${family.name}</h3>
+                        <p class="text-gray-600 italic">${family.latin}</p>
+                        <div class="mt-2 text-sm text-gray-500">
+                            <i class="fa fa-sitemap mr-1"></i> ${family.genera.length} 个属
+                        </div>
+                    </div>
+                `;
+
+                familyCard.addEventListener('click', () => {
+                    currentFamily = family;
+                    loadGenera();
+                });
+
+                familiesContainer.appendChild(familyCard);
+            });
+
+            // 更新导航栏
+            updateBreadcrumb(0);
+
+            // 显示科列表，隐藏其他视图
+            taxonomyList.classList.remove('hidden');
+            genusList.classList.add('hidden');
+            speciesList.classList.add('hidden');
+            speciesDetail.classList.add('hidden');
+        }
+
+        // 加载属列表
+        function loadGenera() {
+            const generaContainer = document.querySelector('#genus-list .grid');
+            generaContainer.innerHTML = '';
+
+            currentFamilyName.textContent = currentFamily.name;
+
+            currentFamily.genera.forEach(genus => {
+                const genusCard = document.createElement('div');
+                genusCard.className = 'bg-white rounded-xl shadow-md overflow-hidden transform transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer';
+                genusCard.innerHTML = `
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-800">${genus.name}</h3>
+                        <p class="text-gray-600 italic">${genus.latin}</p>
+                        <div class="mt-2 text-sm text-gray-500">
+                            <i class="fa fa-sitemap mr-1"></i> ${genus.species.length} 个种
+                        </div>
+                    </div>
+                `;
+
+                genusCard.addEventListener('click', () => {
+                    currentGenus = genus;
+                    loadSpecies();
+                });
+
+                generaContainer.appendChild(genusCard);
+            });
+
+            // 更新导航栏
+            updateBreadcrumb(1);
+
+            // 显示属列表，隐藏其他视图
+            taxonomyList.classList.add('hidden');
+            genusList.classList.remove('hidden');
+            speciesList.classList.add('hidden');
+            speciesDetail.classList.add('hidden');
+        }
+
+        // 加载种列表
+        function loadSpecies() {
+            const speciesContainer = document.querySelector('#species-list .grid');
+            speciesContainer.innerHTML = '';
+
+            currentGenusName.textContent = currentGenus.name;
+
+            currentGenus.species.forEach(species => {
+                const speciesCard = document.createElement('div');
+                speciesCard.className = 'bg-white rounded-xl shadow-md overflow-hidden transform transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer';
+                speciesCard.innerHTML = `
+                    <div class="aspect-video bg-gray-100 overflow-hidden">
+                        <img src="${species.images[0]}" alt="${species.name}" class="w-full h-full object-cover transition-all duration-300 hover:scale-110">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-800">${species.name}</h3>
+                        <p class="text-gray-600 italic">${species.latin}</p>
+                    </div>
+                `;
+
+                speciesCard.addEventListener('click', () => {
+                    currentSpecies = species;
+                    loadSpeciesDetail();
+                });
+
+                speciesContainer.appendChild(speciesCard);
+            });
+
+            // 更新导航栏
+            updateBreadcrumb(2);
+
+            // 显示种列表，隐藏其他视图
+            taxonomyList.classList.add('hidden');
+            genusList.classList.add('hidden');
+            speciesList.classList.remove('hidden');
+            speciesDetail.classList.add('hidden');
+        }
+
+        // 加载物种详情
+        function loadSpeciesDetail() {
+            detailSpeciesName.textContent = currentSpecies.name;
+            detailSpeciesLatin.textContent = currentSpecies.latin;
+            detailFamily.textContent = currentFamily.name;
+            detailGenus.textContent = currentGenus.name;
+            speciesDescription.innerHTML = currentSpecies.description || '<p>暂无物种介绍，等待补充...</p>';
+            mainImage.src = currentSpecies.images[0];
+
+            // 更新导航栏
+            updateBreadcrumb(3);
+
+            // 显示物种详情，隐藏其他视图
+            taxonomyList.classList.add('hidden');
+            genusList.classList.add('hidden');
+            speciesList.classList.add('hidden');
+            speciesDetail.classList.remove('hidden');
+        }
+
+        // 更新面包屑导航
+        function updateBreadcrumb(level) {
+            // 重置所有面包屑项
+            document.querySelectorAll('#breadcrumb a').forEach(link => {
+                link.classList.add('hidden');
+            });
+            document.querySelectorAll('#breadcrumb i').forEach(icon => {
+                icon.classList.add('hidden');
+            });
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.classList.add('hidden');
+            });
+
+            // 首页链接始终显示
+            document.querySelector('#breadcrumb a[data-level="0"]').classList.remove('hidden');
+            document.querySelector('#mobile-menu a[data-level="0"]').classList.remove('hidden');
+
+            // 根据当前级别显示相应的面包屑
+            if (level >= 1) {
+                const familyLink = document.querySelector('#breadcrumb a[data-level="1"]');
+                familyLink.textContent = currentFamily.name;
+                familyLink.classList.remove('hidden');
+                document.querySelector('#breadcrumb i:nth-child(2)').classList.remove('hidden');
+
+                const mobileFamilyLink = document.querySelector('#mobile-menu a[data-level="1"]');
+                mobileFamilyLink.textContent = currentFamily.name;
+                mobileFamilyLink.classList.remove('hidden');
+
+                if (level >= 2) {
+                    const genusLink = document.querySelector('#breadcrumb a[data-level="2"]');
+                    genusLink.textContent = currentGenus.name;
+                    genusLink.classList.remove('hidden');
+                    document.querySelector('#breadcrumb i:nth-child(4)').classList.remove('hidden');
+
+                    const mobileGenusLink = document.querySelector('#mobile-menu a[data-level="2"]');
+                    mobileGenusLink.textContent = currentGenus.name;
+                    mobileGenusLink.classList.remove('hidden');
+
+                    if (level >= 3) {
+                        const speciesLink = document.querySelector('#breadcrumb a[data-level="3"]');
+                        speciesLink.textContent = currentSpecies.name;
+                        speciesLink.classList.remove('hidden');
+                        document.querySelector('#breadcrumb i:nth-child(6)').classList.remove('hidden');
+
+                        const mobileSpeciesLink = document.querySelector('#mobile-menu a[data-level="3"]');
+                        mobileSpeciesLink.textContent = currentSpecies.name;
+                        mobileSpeciesLink.classList.remove('hidden');
+                    }
+                }
+            }
+
+            // 为面包屑链接添加点击事件
+            document.querySelectorAll('#breadcrumb a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetLevel = parseInt(link.dataset.level);
+                    navigateToLevel(targetLevel);
+                });
+            });
+
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetLevel = parseInt(link.dataset.level);
+                    navigateToLevel(targetLevel);
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+        }
+
+        // 导航到指定级别
+        function navigateToLevel(level) {
+            if (level === 0) {
+                currentFamily = null;
+                currentGenus = null;
+                currentSpecies = null;
+                loadFamilies();
+            } else if (level === 1) {
+                currentGenus = null;
+                currentSpecies = null;
+                loadGenera();
+            } else if (level === 2) {
+                currentSpecies = null;
+                loadSpecies();
+            }
+        }
+
+        // 上传照片模态框
+        uploadPhotoBtn.addEventListener('click', () => {
+            // 填充科选择框
+            const familySelect = document.getElementById('photo-family');
+            familySelect.innerHTML = '';
+            plantData.families.forEach(family => {
+                const option = document.createElement('option');
+                option.value = family.id;
+                option.textContent = `${family.name} (${family.latin})`;
+                familySelect.appendChild(option);
+            });
+
+            // 触发科变更事件以更新属选择框
+            familySelect.dispatchEvent(new Event('change'));
+
+            uploadModal.classList.remove('hidden');
+        });
+
+        closeUploadModal.addEventListener('click', () => {
+            uploadModal.classList.add('hidden');
+        });
+
+        cancelUpload.addEventListener('click', () => {
+            uploadModal.classList.add('hidden');
+        });
+
+        // 科选择变更事件
+        document.getElementById('photo-family').addEventListener('change', () => {
+            const familyId = parseInt(document.getElementById('photo-family').value);
+            const family = plantData.families.find(f => f.id === familyId);
+
+            // 填充属选择框
+            const genusSelect = document.getElementById('photo-genus');
+            genusSelect.innerHTML = '';
+            family.genera.forEach(genus => {
+                const option = document.createElement('option');
+                option.value = genus.id;
+                option.textContent = `${genus.name} (${genus.latin})`;
+                genusSelect.appendChild(option);
+            });
+
+            // 触发属变更事件以更新种选择框
+            genusSelect.dispatchEvent(new Event('change'));
+        });
+
+        // 属选择变更事件
+        document.getElementById('photo-genus').addEventListener('change', () => {
+            const familyId = parseInt(document.getElementById('photo-family').value);
+            const family = plantData.families.find(f => f.id === familyId);
+            const genusId = parseInt(document.getElementById('photo-genus').value);
+            const genus = family.genera.find(g => g.id === genusId);
+
+            // 填充种选择框
+            const speciesSelect = document.getElementById('photo-species');
+            speciesSelect.innerHTML = '';
+            genus.species.forEach(species => {
+                const option = document.createElement('option');
+                option.value = species.id;
+                option.textContent = `${species.name} (${species.latin})`;
+                speciesSelect.appendChild(option);
+            });
+        });
+
+        // 上传表单提交
+        uploadForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const photoFile = document.getElementById('photo-file').files[0];
+            const familyId = parseInt(document.getElementById('photo-family').value);
+            const genusId = parseInt(document.getElementById('photo-genus').value);
+            const speciesId = parseInt(document.getElementById('photo-species').value);
+
+            // 在实际应用中，这里会发送请求到服务器
+            console.log('上传照片:', {
+                file: photoFile,
+                familyId,
+                genusId,
+                speciesId
+            });
+
+            // 模拟上传成功
+            alert('照片上传成功！');
+            uploadModal.classList.add('hidden');
+            uploadForm.reset();
+        });
+
+        // 添加分类模态框
+        addTaxonomyBtn.addEventListener('click', () => {
+            // 重置表单
+            addTaxonomyForm.reset();
+            parentFamilyGroup.classList.add('hidden');
+            parentGenusGroup.classList.add('hidden');
+
+            // 填充科选择框
+            const familySelect = document.getElementById('parent-family');
+            familySelect.innerHTML = '';
+            plantData.families.forEach(family => {
+                const option = document.createElement('option');
+                option.value = family.id;
+                option.textContent = `${family.name} (${family.latin})`;
+                familySelect.appendChild(option);
+            });
+
+            addTaxonomyModal.classList.remove('hidden');
+        });
+
+        closeAddModal.addEventListener('click', () => {
+            addTaxonomyModal.classList.add('hidden');
+        });
+
+        cancelAdd.addEventListener('click', () => {
+            addTaxonomyModal.classList.add('hidden');
+        });
+
+        // 分类级别选择变更事件
+        taxonomyType.addEventListener('change', () => {
+            const type = taxonomyType.value;
+            if (type === 'family') {
+                parentFamilyGroup.classList.add('hidden');
+                parentGenusGroup.classList.add('hidden');
+            } else if (type === 'genus') {
+                parentFamilyGroup.classList.remove('hidden');
+                parentGenusGroup.classList.add('hidden');
+            } else if (type === 'species') {
+                parentFamilyGroup.classList.remove('hidden');
+                // 触发科变更事件以更新属选择框
+                parentFamily.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // 科选择变更事件（添加分类）
+        parentFamily.addEventListener('change', () => {
+            const familyId = parseInt(parentFamily.value);
+            const family = plantData.families.find(f => f.id === familyId);
+
+            // 填充属选择框
+            const genusSelect = document.getElementById('parent-genus');
+            genusSelect.innerHTML = '';
+            family.genera.forEach(genus => {
+                const option = document.createElement('option');
+                option.value = genus.id;
+                option.textContent = `${genus.name} (${genus.latin})`;
+                genusSelect.appendChild(option);
+            });
+
+            // 显示属选择框
+            if (taxonomyType.value === 'species') {
+                parentGenusGroup.classList.remove('hidden');
+            }
+        });
+
+        // 添加分类表单提交
+        addTaxonomyForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const type = taxonomyType.value;
+            const name = taxonomyName.value;
+            const latin = taxonomyLatin.value;
+
+            if (!name || !latin) {
+                alert('请填写中文名和拉丁名');
+                return;
+            }
+
+            if (type === 'family') {
+                // 添加新科
+                const newFamilyId = Math.max(...plantData.families.map(f => f.id)) + 1;
+                plantData.families.push({
+                    id: newFamilyId,
+                    name,
+                    latin,
+                    genera: []
+                });
+                alert(`已添加新科: ${name}`);
+            } else if (type === 'genus') {
+                // 添加新属
+                const familyId = parseInt(parentFamily.value);
+                const family = plantData.families.find(f => f.id === familyId);
+                const newGenusId = Math.max(...family.genera.map(g => g.id)) + 1;
+                family.genera.push({
+                    id: newGenusId,
+                    name,
+                    latin,
+                    species: []
+                });
+                alert(`已添加新属: ${name}`);
+            } else if (type === 'species') {
+                // 添加新种
+                const familyId = parseInt(parentFamily.value);
+                const family = plantData.families.find(f => f.id === familyId);
+                const genusId = parseInt(parentGenus.value);
+                const genus = family.genera.find(g => g.id === genusId);
+                const newSpeciesId = Math.max(...genus.species.map(s => s.id)) + 1;
+                genus.species.push({
+                    id: newSpeciesId,
+                    name,
+                    latin,
+                    description: '',
+                    images: []
+                });
+                alert(`已添加新种: ${name}`);
+            }
+
+            addTaxonomyModal.classList.add('hidden');
+            addTaxonomyForm.reset();
+            
+            // 如果当前显示的是科列表，则重新加载
+            if (!taxonomyList.classList.contains('hidden')) {
+                loadFamilies();
+            }
+        });
+
+        // 图片缩略图点击事件
+        document.querySelectorAll('#species-images .grid div').forEach((thumbnail, index) => {
+            thumbnail.addEventListener('click', () => {
+                if (currentSpecies && currentSpecies.images && currentSpecies.images[index]) {
+                    mainImage.src = currentSpecies.images[index];
+                }
+            });
+        });
+
+        // 滚动时导航栏样式变化
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 10) {
+                navbar.classList.add('py-2');
+                navbar.classList.remove('py-3');
+                navbar.classList.add('shadow-lg');
+            } else {
+                navbar.classList.add('py-3');
+                navbar.classList.remove('py-2');
+                navbar.classList.remove('shadow-lg');
+            }
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 密码输入框聚焦
+            passwordInput.focus();
+        });
+    </script>
+</body>
+</html>    
